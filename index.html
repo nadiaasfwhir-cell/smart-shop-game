@@ -1,0 +1,2299 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>SMART SHOP - Game Edukasi Matematika</title>
+  
+  <!-- Import Google Fonts: Fredoka & Baloo 2 -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@700;800&family=Fredoka:wght@500;600;700&display=swap" rel="stylesheet">
+
+  <style>
+    /* Reset & Base Styles */
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      user-select: none;
+      -webkit-user-select: none;
+      font-family: 'Fredoka', 'Baloo 2', 'Arial Rounded MT Bold', sans-serif;
+    }
+
+    html, body {
+      width: 100vw;
+      height: 100vh;
+      background-color: #2c2523;
+      overflow: hidden;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+
+    /* Peringatan Rotasi Portrait HP */
+    #rotate-device-notice {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background-color: #A8795D;
+      color: #FFF8EF;
+      z-index: 9999;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      text-align: center;
+      padding: 20px;
+    }
+
+    #rotate-device-notice .icon {
+      font-size: 64px;
+      margin-bottom: 15px;
+      animation: rotateAnim 2s infinite ease-in-out;
+    }
+
+    @keyframes rotateAnim {
+      0%, 100% { transform: rotate(0deg); }
+      50% { transform: rotate(90deg); }
+    }
+
+    /* Game Viewport 16:9 Landscape Canvas */
+    #game-container {
+      position: relative;
+      width: 100vw;
+      height: 56.25vw; /* Ratio 16:9 */
+      max-height: 100vh;
+      max-width: 177.78vh; /* Ratio 16:9 */
+      background-color: #FFF8EF;
+      background-position: center center;
+      background-size: cover;
+      background-repeat: no-repeat;
+      box-shadow: 0 0 30px rgba(0,0,0,0.6);
+      overflow: hidden;
+    }
+
+    /* Sistem Tampilan Layar (View Switcher) */
+    .game-screen {
+      position: absolute;
+      inset: 0;
+      display: none;
+    }
+    .game-screen.active {
+      display: block;
+    }
+
+    /* Tombol Suara (Pojok Kanan Atas) */
+    .btn-sound {
+      position: absolute;
+      top: 4%;
+      right: 3%;
+      width: 4.5vw;
+      height: 4.5vw;
+      max-width: 45px;
+      max-height: 45px;
+      background-color: #FFF8EF;
+      border: 3px solid #A8795D;
+      border-radius: 50%;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      font-size: 1.2rem;
+      cursor: pointer;
+      box-shadow: 0 4px 8px rgba(168, 121, 93, 0.3);
+      z-index: 30;
+      transition: transform 0.1s;
+    }
+
+    .btn-sound:active {
+      transform: scale(0.9);
+    }
+
+    /* Maskot Kiri (Perempuan) */
+    .mascot-left {
+      position: absolute;
+      left: -55%;
+      bottom: 0%;
+      height: 77%;
+      max-height: 500px;
+      z-index: 4;
+      pointer-events: none;
+    }
+
+    .mascot-left img {
+      height: 200%;
+      width: auto;
+      object-fit: contain;
+      filter: drop-shadow(0px 8px 6px rgba(0,0,0,0.25));
+    }
+
+    /* Maskot Kanan (Laki-Laki) */
+    .mascot-right {
+      position: absolute;
+      right: -58%;
+      bottom: 0%;
+      height: 77%;
+      max-height: 500px;
+      z-index: 4;
+      pointer-events: none;
+    }
+
+    .mascot-right img {
+      height: 200%;
+      width: auto;
+      object-fit: contain;
+      filter: drop-shadow(0px 8px 6px rgba(0,0,0,0.25));
+    }
+
+    /* Area Papan Judul & Slogan di Tengah Atas (C1) */
+    .title-area {
+      position: absolute;
+      top: 5%;
+      left: 50%;
+      transform: translateX(-50%);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      text-align: center;
+      z-index: 10;
+      width: 62%;
+    }
+
+    .logo-box {
+      background: rgba(255, 248, 239, 0.95);
+      border: 4px solid #A8795D;
+      border-radius: 20px;
+      padding: 6px 24px;
+      box-shadow: 0 6px 12px rgba(168, 121, 93, 0.25);
+    }
+
+    .logo-text {
+      font-family: 'Baloo 2', 'Fredoka', cursive;
+      font-size: min(4vw, 40px);
+      font-weight: 800;
+      color: #A8795D;
+      text-shadow: 2px 2px 0px #E9D7C3, 3px 3px 0px #78947A;
+      letter-spacing: 2px;
+      line-height: 1.1;
+    }
+
+    .slogan-text {
+      margin-top: 6px;
+      font-family: 'Fredoka', sans-serif;
+      font-size: min(1.5vw, 14px);
+      font-weight: 600;
+      color: #78947A;
+      background-color: #FFF8EF;
+      border: 2px solid #E8A8B8;
+      border-radius: 14px;
+      padding: 4px 14px;
+      box-shadow: 0 3px 6px rgba(0,0,0,0.1);
+    }
+
+    /* Area Tombol Menu di Tengah Bawah (C1) */
+    .menu-area {
+      position: absolute;
+      bottom: 10%;
+      left: 50%;
+      transform: translateX(-50%);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 1.2vh;
+      z-index: 20;
+    }
+
+    @keyframes pulseButton {
+      0%, 100% { transform: scale(1); }
+      50% { transform: scale(1.05); }
+    }
+
+    .btn-start {
+      background-color: #78947A;
+      color: #FFF8EF;
+      border: 4px solid #A8795D;
+      border-radius: 24px;
+      padding: 10px 36px;
+      font-family: 'Baloo 2', 'Fredoka', cursive;
+      font-size: min(2.4vw, 22px);
+      font-weight: 800;
+      letter-spacing: 1px;
+      cursor: pointer;
+      box-shadow: 0 6px 0px #A8795D, 0 10px 16px rgba(0,0,0,0.25);
+      text-shadow: 1px 1px 2px rgba(0,0,0,0.3);
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      animation: pulseButton 1.5s infinite ease-in-out;
+      transition: all 0.1s ease;
+    }
+
+    .btn-sub-group {
+      display: flex;
+      gap: 1.5vw;
+    }
+
+    .btn-game {
+      font-family: 'Baloo 2', 'Fredoka', cursive;
+      color: #FFF8EF;
+      border: 3px solid #A8795D;
+      border-radius: 16px;
+      padding: 7px 18px;
+      font-size: min(1.7vw, 15px);
+      font-weight: 800;
+      cursor: pointer;
+      box-shadow: 0 4px 0px #A8795D, 0 6px 10px rgba(0,0,0,0.15);
+      text-shadow: 1px 1px 2px rgba(0,0,0,0.2);
+      transition: all 0.1s ease;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      animation: pulseButton 1.8s infinite ease-in-out;
+    }
+
+    .btn-materi {
+      background-color: #E9D7C3;
+      color: #A8795D;
+      text-shadow: 1px 1px 2px rgba(255,255,255,0.6);
+      animation-delay: 0.3s;
+    }
+
+    .btn-cara {
+      background-color: #E8A8B8;
+      animation-delay: 0.6s;
+    }
+
+    .btn-start:hover, .btn-game:hover {
+      filter: brightness(1.05);
+      transform: translateY(-2px);
+    }
+
+    .btn-start:active, .btn-game:active {
+      transform: translateY(3px) scale(0.98) !important;
+      box-shadow: 0 2px 0px #A8795D, 0 3px 5px rgba(0,0,0,0.2);
+      animation: none;
+    }
+
+    /* HALAMAN C3: IDENTITAS PEMAIN */
+    .c3-container {
+      position: absolute;
+      top: 15%;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 56%;
+      height: 72%;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      z-index: 10;
+      text-align: center;
+    }
+
+    .c3-card {
+      background: rgba(255, 248, 239, 0.96);
+      border: 4px solid #A8795D;
+      border-radius: 22px;
+      padding: 22px 28px;
+      width: 100%;
+      box-shadow: 0 10px 25px rgba(168, 121, 93, 0.3);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .c3-title {
+      font-family: 'Baloo 2', cursive;
+      font-size: min(2.6vw, 24px);
+      font-weight: 800;
+      color: #A8795D;
+      text-shadow: 1px 1px 0px #E9D7C3;
+      letter-spacing: 1px;
+    }
+
+    .c3-greeting {
+      font-family: 'Fredoka', sans-serif;
+      font-size: min(1.35vw, 13.5px);
+      color: #78947A;
+      font-weight: 600;
+      line-height: 1.4;
+    }
+
+    .c3-input-name {
+      font-family: 'Fredoka', sans-serif;
+      padding: 10px 16px;
+      border-radius: 14px;
+      border: 3px solid #A8795D;
+      width: 78%;
+      font-size: min(1.5vw, 15px);
+      text-align: center;
+      background-color: #FFF8EF;
+      color: #2c2523;
+      outline: none;
+      direction: ltr !important;
+      unicode-bidi: normal !important;
+      box-shadow: inset 0 2px 4px rgba(0,0,0,0.06);
+    }
+
+    #c3NotificationBox {
+      background-color: #FFF0F2;
+      border: 2px dashed #E8A8B8;
+      color: #A8795D;
+      font-size: min(1.2vw, 12px);
+      font-weight: 600;
+      padding: 6px 14px;
+      border-radius: 10px;
+      display: none;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .c3-btn-group {
+      display: flex;
+      gap: 14px;
+      margin-top: 4px;
+    }
+
+    .btn-c3-action {
+      font-family: 'Baloo 2', cursive;
+      border: 3px solid #A8795D;
+      border-radius: 16px;
+      padding: 7px 22px;
+      font-size: min(1.4vw, 14px);
+      font-weight: 800;
+      cursor: pointer;
+      box-shadow: 0 4px 0px #A8795D, 0 6px 10px rgba(0,0,0,0.15);
+      transition: all 0.1s ease;
+    }
+
+    .btn-c3-back {
+      background-color: #E9D7C3;
+      color: #A8795D;
+    }
+
+    .btn-c3-next {
+      background-color: #78947A;
+      color: #FFF8EF;
+      animation: pulseButton 1.5s infinite ease-in-out;
+    }
+
+    /* HALAMAN C2 & LAINNYA */
+    .c2-container {
+      position: absolute;
+      top: 13%;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 72%;
+      height: 78%;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      z-index: 10;
+      overflow-y: auto;
+      padding: 10px;
+    }
+
+    .c2-box-content {
+      background: rgba(255, 248, 239, 0.96);
+      border: 4px solid #A8795D;
+      border-radius: 20px;
+      padding: 14px 18px;
+      width: 100%;
+      text-align: center;
+      box-shadow: 0 6px 15px rgba(168, 121, 93, 0.2);
+      margin-bottom: 10px;
+    }
+
+    .c2-cards-grid {
+      display: flex;
+      gap: 1.5vw;
+      width: 100%;
+      margin: 8px 0;
+    }
+
+    .c2-mini-card {
+      flex: 1;
+      background: #FFF8EF;
+      border: 3px solid #A8795D;
+      border-radius: 14px;
+      padding: 10px 14px;
+      text-align: left;
+      box-shadow: 0 3px 6px rgba(0,0,0,0.1);
+    }
+
+    .c2-nav-buttons {
+      display: flex;
+      justify-content: space-between;
+      width: 100%;
+      margin-top: 10px;
+    }
+
+    /* MATERI / C4 */
+    .material-page-container {
+      position: absolute;
+      top: 10%;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 78%;
+      height: 82%;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      z-index: 10;
+      overflow-y: auto;
+      padding: 10px;
+    }
+
+    .material-header-box {
+      background: rgba(255, 248, 239, 0.96);
+      border: 3px solid #A8795D;
+      border-radius: 16px;
+      padding: 6px 20px;
+      text-align: center;
+      box-shadow: 0 4px 10px rgba(168, 121, 93, 0.2);
+      margin-bottom: 8px;
+      width: 100%;
+    }
+
+    .material-title {
+      font-family: 'Baloo 2', cursive;
+      font-size: min(1.8vw, 18px);
+      font-weight: 800;
+      color: #A8795D;
+    }
+
+    .material-content-grid {
+      display: flex;
+      gap: 1.5vw;
+      width: 100%;
+      margin-bottom: 10px;
+    }
+
+    .material-card {
+      flex: 1;
+      background: #FFF8EF;
+      border: 3px solid #A8795D;
+      border-radius: 16px;
+      padding: 12px 14px;
+      box-shadow: 0 4px 8px rgba(168, 121, 93, 0.15);
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .material-card-title {
+      font-family: 'Baloo 2', cursive;
+      font-size: min(1.35vw, 13.5px);
+      font-weight: 800;
+      color: #78947A;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .material-card-body {
+      font-size: min(1.1vw, 11px);
+      color: #2c2523;
+      line-height: 1.35;
+    }
+
+    .material-nav-bar {
+      display: flex;
+      justify-content: space-between;
+      width: 100%;
+      margin-top: 4px;
+    }
+
+    /* C5 */
+    .c5-container {
+      position: absolute;
+      top: 10%;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 78%;
+      height: 82%;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      z-index: 10;
+      overflow-y: auto;
+      padding: 10px;
+    }
+
+    .c5-header-box {
+      background: rgba(255, 248, 239, 0.96);
+      border: 3px solid #A8795D;
+      border-radius: 16px;
+      padding: 10px 20px;
+      text-align: center;
+      box-shadow: 0 4px 10px rgba(168, 121, 93, 0.2);
+      margin-bottom: 10px;
+      width: 100%;
+    }
+
+    .c5-title {
+      font-family: 'Baloo 2', cursive;
+      font-size: min(2vw, 20px);
+      font-weight: 800;
+      color: #A8795D;
+    }
+
+    .c5-intro {
+      font-size: min(1.15vw, 11.5px);
+      color: #2c2523;
+      margin-top: 4px;
+      line-height: 1.35;
+    }
+
+    .c5-stages-grid {
+      display: flex;
+      gap: 2vw;
+      width: 100%;
+      margin: 10px 0;
+    }
+
+    .c5-stage-card {
+      flex: 1;
+      background: #FFF8EF;
+      border: 3px solid #A8795D;
+      border-radius: 16px;
+      padding: 14px 16px;
+      box-shadow: 0 4px 10px rgba(168, 121, 93, 0.2);
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      position: relative;
+    }
+
+    .c5-stage-card.locked {
+      background: #F7EFE5;
+      border-color: #B5A194;
+      opacity: 0.85;
+    }
+
+    .c5-stage-title {
+      font-family: 'Baloo 2', cursive;
+      font-size: min(1.4vw, 14px);
+      font-weight: 800;
+      color: #78947A;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 6px;
+    }
+
+    .c5-stage-desc {
+      font-size: min(1.1vw, 11px);
+      color: #2c2523;
+      line-height: 1.4;
+    }
+
+    .c5-status-badge {
+      display: inline-block;
+      padding: 4px 12px;
+      border-radius: 10px;
+      font-family: 'Baloo 2', cursive;
+      font-size: min(1.1vw, 11px);
+      font-weight: 800;
+      width: fit-content;
+    }
+
+    .status-ready {
+      background-color: #E9D7C3;
+      color: #A8795D;
+      border: 2px solid #A8795D;
+    }
+
+    .status-locked {
+      background-color: #E0D4CB;
+      color: #7A6C63;
+      border: 2px solid #B5A194;
+    }
+
+    .status-completed {
+      background-color: #78947A;
+      color: #FFF8EF;
+      border: 2px solid #556B56;
+    }
+
+    .c5-nav-bar {
+      display: flex;
+      justify-content: space-between;
+      width: 100%;
+      margin-top: 10px;
+    }
+
+    /* C6 */
+    .c6-container {
+      position: absolute;
+      top: 12%;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 65%;
+      height: 80%;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      z-index: 10;
+      overflow-y: auto;
+      padding: 10px;
+    }
+
+    .c6-header-box {
+      background: rgba(255, 248, 239, 0.96);
+      border: 3px solid #A8795D;
+      border-radius: 16px;
+      padding: 10px 20px;
+      text-align: center;
+      box-shadow: 0 4px 10px rgba(168, 121, 93, 0.2);
+      margin-bottom: 10px;
+      width: 100%;
+    }
+
+    .c6-title {
+      font-family: 'Baloo 2', cursive;
+      font-size: min(2.2vw, 22px);
+      font-weight: 800;
+      color: #A8795D;
+      letter-spacing: 0.5px;
+    }
+
+    .c6-subtitle {
+      font-family: 'Fredoka', sans-serif;
+      font-size: min(1.3vw, 13px);
+      font-weight: 700;
+      color: #78947A;
+      margin-top: 2px;
+    }
+
+    .c6-info-card {
+      width: 100%;
+      background: rgba(255, 248, 239, 0.96);
+      border: 3px solid #A8795D;
+      border-radius: 16px;
+      padding: 16px 20px;
+      box-shadow: 0 4px 10px rgba(168, 121, 93, 0.15);
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      margin-bottom: 10px;
+    }
+
+    .c6-desc-text {
+      font-size: min(1.15vw, 11.5px);
+      color: #2c2523;
+      line-height: 1.45;
+    }
+
+    .c6-meta-list {
+      display: flex;
+      flex-direction: column;
+      gap: 5px;
+      background: #FAF3EB;
+      border: 2px dashed #A8795D;
+      border-radius: 10px;
+      padding: 10px 14px;
+      font-size: min(1.1vw, 11px);
+    }
+
+    .c6-meta-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      color: #2c2523;
+    }
+
+    .btn-inline-score {
+      font-family: 'Baloo 2', cursive;
+      background-color: #78947A;
+      color: #FFF8EF;
+      border: 2px solid #A8795D;
+      border-radius: 10px;
+      padding: 2px 10px;
+      font-size: min(1vw, 10px);
+      font-weight: 800;
+      cursor: pointer;
+      display: none;
+      box-shadow: 0 2px 0px #A8795D;
+      transition: all 0.1s ease;
+    }
+
+    .btn-inline-score:hover {
+      filter: brightness(1.1);
+      transform: translateY(-1px);
+    }
+
+    .c6-nav-bar {
+      display: flex;
+      justify-content: space-between;
+      width: 100%;
+      margin-top: 6px;
+    }
+
+    /* C7 */
+    .c7-container {
+      position: absolute;
+      top: 10%;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 70%;
+      height: 82%;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      z-index: 10;
+      overflow-y: auto;
+      padding: 10px;
+    }
+
+    .c7-grid-info {
+      display: flex;
+      gap: 1.2vw;
+      width: 100%;
+      margin-bottom: 10px;
+    }
+
+    .c7-card {
+      background: rgba(255, 248, 239, 0.96);
+      border: 3px solid #A8795D;
+      border-radius: 16px;
+      padding: 12px 16px;
+      box-shadow: 0 4px 10px rgba(168, 121, 93, 0.15);
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .c7-card-profile {
+      flex: 1.2;
+      align-items: center;
+      text-align: center;
+      justify-content: center;
+    }
+
+    .c7-card-score {
+      flex: 0.9;
+      align-items: center;
+      text-align: center;
+      justify-content: center;
+    }
+
+    .c7-card-progress {
+      width: 100%;
+      background: rgba(255, 248, 239, 0.96);
+      border: 3px solid #A8795D;
+      border-radius: 16px;
+      padding: 12px 18px;
+      box-shadow: 0 4px 10px rgba(168, 121, 93, 0.15);
+      margin-bottom: 10px;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .c7-label-small {
+      font-family: 'Baloo 2', cursive;
+      font-size: min(1.1vw, 11px);
+      font-weight: 800;
+      color: #78947A;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .c7-value-large {
+      font-family: 'Baloo 2', cursive;
+      font-size: min(1.6vw, 16px);
+      font-weight: 800;
+      color: #A8795D;
+    }
+
+    .c7-challenges-dots {
+      display: flex;
+      justify-content: center;
+      gap: 10px;
+      margin-top: 4px;
+    }
+
+    .c7-dot {
+      width: 28px;
+      height: 28px;
+      background-color: #E9D7C3;
+      border: 2px solid #A8795D;
+      border-radius: 50%;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      font-family: 'Baloo 2', cursive;
+      font-size: min(1vw, 10px);
+      font-weight: 800;
+      color: #A8795D;
+      box-shadow: inset 0 2px 4px rgba(0,0,0,0.08);
+    }
+
+    .c7-dot.completed {
+      background-color: #78947A;
+      color: #FFF8EF;
+      border-color: #556B56;
+    }
+
+    .c7-note-box {
+      width: 100%;
+      background: #FAF3EB;
+      border: 2px dashed #A8795D;
+      border-radius: 12px;
+      padding: 8px 14px;
+      text-align: center;
+      font-size: min(1.15vw, 11.5px);
+      color: #2c2523;
+      font-weight: 600;
+      margin-bottom: 10px;
+    }
+
+    /* HALAMAN TANTANGAN (C8 s.d C16) */
+    .challenge-container {
+      position: absolute;
+      top: 9%;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 64%;
+      height: 84%;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      z-index: 10;
+      background: rgba(255, 248, 239, 0.96);
+      border: 4px solid #A8795D;
+      border-radius: 24px;
+      padding: 14px 20px;
+      box-shadow: 0 10px 25px rgba(168, 121, 93, 0.3);
+      overflow-y: auto;
+    }
+
+    .challenge-header-box {
+      background: #E8A8B8;
+      border: 3px solid #A8795D;
+      border-radius: 18px;
+      padding: 5px 24px;
+      text-align: center;
+      box-shadow: 0 4px 8px rgba(168, 121, 93, 0.2);
+      margin-bottom: 6px;
+    }
+
+    .challenge-title {
+      font-family: 'Baloo 2', cursive;
+      font-size: min(2vw, 20px);
+      font-weight: 800;
+      color: #FFF8EF;
+      text-shadow: 1px 1px 2px rgba(0,0,0,0.25);
+      letter-spacing: 0.5px;
+    }
+
+    .challenge-instruction {
+      font-size: min(1.1vw, 11px);
+      font-weight: 700;
+      color: #78947A;
+      margin-bottom: 6px;
+      text-align: center;
+    }
+
+    .challenge-question-box {
+      width: 100%;
+      background: #FAF3EB;
+      border: 3px solid #E8A8B8;
+      border-radius: 16px;
+      padding: 8px 14px;
+      text-align: center;
+      font-size: min(1.05vw, 10.5px);
+      color: #2c2523;
+      font-weight: 600;
+      line-height: 1.35;
+      margin-bottom: 8px;
+    }
+
+    .challenge-options-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+      width: 100%;
+      margin-bottom: 8px;
+    }
+
+    .challenge-option-btn {
+      background: #FFF8EF;
+      border: 3px solid #A8795D;
+      border-radius: 14px;
+      padding: 8px 12px;
+      font-family: 'Baloo 2', cursive;
+      font-size: min(1.2vw, 12px);
+      font-weight: 800;
+      color: #A8795D;
+      cursor: pointer;
+      box-shadow: 0 3px 0px #A8795D, 0 5px 8px rgba(0,0,0,0.1);
+      transition: all 0.1s ease;
+      text-align: center;
+    }
+
+    .challenge-option-btn:hover {
+      background: #F7EFE5;
+      transform: translateY(-2px);
+    }
+
+    .challenge-feedback-box {
+      padding: 6px 12px;
+      border-radius: 10px;
+      text-align: left;
+      font-family: 'Baloo 2', cursive;
+      font-size: min(1vw, 10px);
+      font-weight: 800;
+      display: none;
+      margin-bottom: 6px;
+      width: 100%;
+    }
+
+    .challenge-feedback-box.correct {
+      background-color: #E6F4EA;
+      border: 2px solid #78947A;
+      color: #2e7d32;
+    }
+
+    .challenge-feedback-box.wrong {
+      background-color: #FCE8E6;
+      border: 2px solid #E8A8B8;
+      color: #c5221f;
+    }
+
+    .challenge-explanation-box {
+      background-color: #FAF3EB;
+      border: 2px dashed #A8795D;
+      border-radius: 12px;
+      padding: 8px 12px;
+      font-size: min(1vw, 10px);
+      color: #2c2523;
+      line-height: 1.4;
+      display: none;
+      margin-bottom: 8px;
+      width: 100%;
+      text-align: left;
+    }
+
+    .challenge-explanation-title {
+      font-family: 'Baloo 2', cursive;
+      color: #78947A;
+      font-weight: 800;
+      margin-bottom: 2px;
+      font-size: min(1.05vw, 10.5px);
+    }
+
+    .challenge-bottom-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      width: 100%;
+      margin-top: auto;
+      gap: 10px;
+    }
+
+    .challenge-top-indicator {
+      position: absolute;
+      top: 4%;
+      left: 50%;
+      transform: translateX(-50%);
+      background: rgba(255, 248, 239, 0.95);
+      border: 3px solid #A8795D;
+      border-radius: 16px;
+      padding: 5px 20px;
+      font-family: 'Baloo 2', cursive;
+      font-size: min(1.2vw, 12px);
+      font-weight: 800;
+      color: #A8795D;
+      box-shadow: 0 4px 10px rgba(168, 121, 93, 0.2);
+      z-index: 20;
+    }
+
+    .challenge-score-indicator {
+      position: absolute;
+      top: 4%;
+      right: 9%;
+      background: rgba(255, 248, 239, 0.95);
+      border: 3px solid #A8795D;
+      border-radius: 16px;
+      padding: 5px 16px;
+      font-family: 'Baloo 2', cursive;
+      font-size: min(1.2vw, 12px);
+      font-weight: 800;
+      color: #78947A;
+      box-shadow: 0 4px 10px rgba(168, 121, 93, 0.2);
+      z-index: 20;
+    }
+
+    /* HALAMAN C18: PENGANTAR PERUBAHAN STATUS MISI SELESAI */
+    .c18-container {
+      position: absolute;
+      top: 12%;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 66%;
+      height: 78%;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      z-index: 10;
+      background: rgba(255, 248, 239, 0.96);
+      border: 4px solid #A8795D;
+      border-radius: 22px;
+      padding: 20px 24px;
+      box-shadow: 0 10px 25px rgba(168, 121, 93, 0.3);
+      text-align: center;
+    }
+
+    .c18-banner {
+      background: #78947A;
+      border: 3px solid #A8795D;
+      border-radius: 16px;
+      padding: 8px 24px;
+      color: #FFF8EF;
+      font-family: 'Baloo 2', cursive;
+      font-size: min(2vw, 20px);
+      font-weight: 800;
+      margin-bottom: 12px;
+      box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+    }
+
+    /* Modal / Pop-up Umum */
+    .modal-overlay {
+      position: absolute;
+      inset: 0;
+      background: rgba(44, 37, 35, 0.65);
+      display: none;
+      justify-content: center;
+      align-items: center;
+      z-index: 50;
+      backdrop-filter: blur(3px);
+    }
+
+    .modal-card {
+      background: #FFF8EF;
+      border: 5px solid #A8795D;
+      border-radius: 22px;
+      width: 65%;
+      max-height: 80%;
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      box-shadow: 0 12px 30px rgba(0,0,0,0.35);
+      animation: modalPop 0.25s ease-out;
+    }
+
+    @keyframes modalPop {
+      from { transform: scale(0.8); opacity: 0; }
+      to { transform: scale(1); opacity: 1; }
+    }
+
+    .modal-title {
+      font-family: 'Baloo 2', cursive;
+      font-size: min(2.4vw, 22px);
+      color: #A8795D;
+      margin-bottom: 8px;
+      text-align: center;
+      font-weight: 800;
+    }
+
+    .modal-body {
+      font-family: 'Fredoka', sans-serif;
+      font-size: min(1.7vw, 15px);
+      color: #2c2523;
+      width: 100%;
+      text-align: center;
+      line-height: 1.4;
+      overflow-y: auto;
+      margin-bottom: 12px;
+    }
+
+    .btn-close {
+      font-family: 'Baloo 2', cursive;
+      background: #E8A8B8;
+      border: 3px solid #A8795D;
+      color: #FFF8EF;
+      border-radius: 12px;
+      padding: 6px 18px;
+      font-size: 0.95rem;
+      font-weight: 800;
+      cursor: pointer;
+      box-shadow: 0 3px 0px #A8795D;
+    }
+
+    /* HALAMAN C20: REKAPITULASI POIN */
+    .c20-container {
+      position: absolute;
+      top: 10%;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 68%;
+      height: 82%;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      z-index: 10;
+      background: rgba(255, 248, 239, 0.96);
+      border: 4px solid #A8795D;
+      border-radius: 22px;
+      padding: 16px 22px;
+      box-shadow: 0 10px 25px rgba(168, 121, 93, 0.3);
+      overflow-y: auto;
+    }
+
+    .c20-badge {
+      font-size: min(3vw, 32px);
+      margin-bottom: 4px;
+    }
+
+    .c20-score-box {
+      background: #FAF3EB;
+      border: 3px dashed #A8795D;
+      border-radius: 16px;
+      padding: 12px 20px;
+      width: 100%;
+      text-align: center;
+      margin: 8px 0;
+    }
+
+    .c20-score-value {
+      font-family: 'Baloo 2', cursive;
+      font-size: min(3.2vw, 32px);
+      font-weight: 800;
+      color: #78947A;
+      text-shadow: 1px 1px 0px #FFF8EF;
+    }
+
+    @media (orientation: portrait) {
+      #rotate-device-notice {
+        display: flex;
+      }
+      #game-container {
+        display: none;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Peringatan Rotasi Portrait HP -->
+  <div id="rotate-device-notice">
+    <div class="icon">📱🔄</div>
+    <h2>Putar Perangkat Anda</h2>
+    <p>Game SMART SHOP dirancang khusus untuk dimainkan dalam posisi horizontal (Landscape).</p>
+  </div>
+
+  <!-- Kanvas Utama Game 16:9 Landscape -->
+  <div id="game-container" style="background-image: url('assets/bg_gameplay.jpg');">
+    
+    <!-- Tombol Audio Global -->
+    <button class="btn-sound" id="btnAudio" title="Suara On/Off">🔊</button>
+
+    <!-- Elemen Audio Backsound Menu & Soal -->
+    <audio id="bgMusic" src="assets/backsound_game.mp3" loop preload="auto"></audio>
+    <audio id="soalMusic" src="assets/backsound_soal.mp3" loop preload="auto"></audio>
+
+    <!-- HALAMAN C1 (MENU UTAMA) -->
+    <div id="screen-c1" class="game-screen active" style="background-image: url('assets/bg_pembuka.jpg'); background-size: cover; background-position: center;">
+      <div class="mascot-left"><img src="assets/maskot_pr.png" alt="Maskot Perempuan" /></div>
+      <div class="mascot-right"><img src="assets/maskot_lk.png" alt="Maskot Laki-Laki" /></div>
+
+      <div class="title-area">
+        <div class="logo-box"><h1 class="logo-text">SMART SHOP</h1></div>
+        <div class="slogan-text">Belajar, Hitung, dan Selesaikan Persamaan dan Pertidaksamaan Linier dengan Seru!</div>
+      </div>
+
+      <div class="menu-area">
+        <button class="btn-start" onclick="startNewGameFromC1()"><span>▶</span> MULAI</button>
+        <div class="btn-sub-group">
+          <button class="btn-game btn-materi" onclick="switchScreen('screen-material-1')"><span>📖</span> MATERI</button>
+          <button class="btn-game btn-cara" onclick="openModal('modal-cara')"><span>⚙</span> CARA BERMAIN</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- HALAMAN C3 (IDENTITAS PEMAIN) -->
+    <div id="screen-c3" class="game-screen" style="background-image: url('assets/bg_pembuka.jpg'); background-size: cover; background-position: center;">
+      <div class="mascot-left"><img src="assets/maskot_pr.png" alt="Maskot Perempuan" /></div>
+      <div class="mascot-right"><img src="assets/maskot_lk.png" alt="Maskot Laki-Laki" /></div>
+
+      <div class="c3-container">
+        <div class="c3-card">
+          <h2 class="c3-title">SIAPA NAMAMU?</h2>
+          <p class="c3-greeting">Hai, Sobat Belanja! Sebelum mulai berbelanja di minimarket, tulis namamu dulu ya!</p>
+          <input type="text" id="c3PlayerNameInput" class="c3-input-name" placeholder="Masukkan nama kamu di sini" autocomplete="off" maxlength="20"/>
+          <div id="c3NotificationBox"><span>💡</span> <span>Yuk, isi nama kamu dulu!</span></div>
+          <div class="c3-btn-group">
+            <button class="btn-c3-action btn-c3-back" onclick="switchScreen('screen-c1')">◀ KEMBALI</button>
+            <button class="btn-c3-action btn-c3-next" onclick="validateAndSavePlayerName()">LANJUT ▶</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- HALAMAN C2 (PENGANTAR UMUM) -->
+    <div id="screen-c2" class="game-screen" style="background-image: url('assets/bg_pembuka.jpg'); background-size: cover; background-position: center;">
+      <div class="mascot-left"><img src="assets/maskot_pr.png" alt="Maskot Perempuan" /></div>
+      <div class="mascot-right"><img src="assets/maskot_lk.png" alt="Maskot Laki-Laki" /></div>
+
+      <div class="c2-container">
+        <div class="c2-box-content">
+          <h2 style="font-family: 'Baloo 2', cursive; color: #A8795D; font-size: min(2vw, 20px); margin-bottom: 4px;">SELAMAT DATANG DI SMART SHOP!</h2>
+          <p style="font-size: min(1.2vw, 12px); line-height: 1.35; color: #2c2523;">Hai, <b id="displayNameText" style="color: #78947A;">Sobat Belanja</b>! Selamat datang di SMART SHOP, tempat kamu belajar matematika sambil bermain menjadi pembeli yang cerdas!</p>
+        </div>
+        <div class="c2-cards-grid">
+          <div class="c2-mini-card">
+            <h4 style="font-family: 'Baloo 2', cursive; color: #78947A; font-size: min(1.3vw, 13px); margin-bottom: 4px;">🛒 Persamaan (PLSV)</h4>
+            <p style="font-size: min(1.1vw, 11px); line-height: 1.3; color: #2c2523;">Belajar menemukan nilai suatu variabel yang belum diketahui persis pada transaksi.</p>
+          </div>
+          <div class="c2-mini-card">
+            <h4 style="font-family: 'Baloo 2', cursive; color: #78947A; font-size: min(1.3vw, 13px); margin-bottom: 4px;">🏷️ Pertidaksamaan (PtLSV)</h4>
+            <p style="font-size: min(1.1vw, 11px); line-height: 1.3; color: #2c2523;">Belajar menentukan batas nilai variabel yang memenuhi syarat kupon belanja.</p>
+          </div>
+        </div>
+        <div class="c2-box-content" style="padding: 10px; margin-bottom: 6px;">
+          <p style="font-size: min(1.15vw, 11.5px); line-height: 1.3; color: #2c2523;">Siapkan dirimu untuk menyelesaikan tantangan matematika, memilih barang, dan mengumpulkan hadiah. Yuk, belajar matematika jadi lebih seru!</p>
+        </div>
+        <div class="c2-nav-buttons">
+          <button class="btn-game btn-materi" onclick="switchScreen('screen-c3')">◀ KEMBALI</button>
+          <button class="btn-game btn-start" style="padding: 6px 20px; font-size: min(1.4vw, 14px); animation: none;" onclick="switchScreen('screen-c5')">LANJUT ▶</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- HALAMAN MATERI 1 (C4 - SLIDE 1) -->
+    <div id="screen-material-1" class="game-screen" style="background-image: url('assets/bg_pembuka.jpg'); background-size: cover; background-position: center;">
+      <div class="mascot-left"><img src="assets/maskot_pr.png" alt="Maskot Perempuan" /></div>
+      <div class="mascot-right"><img src="assets/maskot_lk.png" alt="Maskot Laki-Laki" /></div>
+
+      <div class="material-page-container">
+        <div class="material-header-box"><h2 class="material-title">YUK, KENALAN DENGAN MATERI!</h2></div>
+        <div class="material-content-grid">
+          <div class="material-card">
+            <div class="material-card-title"><span>✏️</span> A. Persamaan Linear Satu Variabel (PLSV)</div>
+            <div class="material-card-body">PLSV adalah persamaan yang memiliki satu variabel berpangkat satu. Variabel adalah simbol, misalnya <b>x</b>, untuk mewakili nilai yang belum diketahui.</div>
+          </div>
+          <div class="material-card">
+            <div class="material-card-title"><span>🏷️</span> B. Pertidaksamaan Linear Satu Variabel (PtLSV)</div>
+            <div class="material-card-body">PtLSV adalah pertidaksamaan yang memiliki satu variabel berpangkat satu. Digunakan untuk menyatakan hubungan batas nilai belanja di minimarket.</div>
+          </div>
+        </div>
+        <div class="material-nav-bar">
+          <button class="btn-game btn-materi" onclick="switchScreen('screen-c1')">◀ KEMBALI</button>
+          <button class="btn-game btn-start" style="padding: 6px 20px; font-size: min(1.4vw, 14px); animation: none;" onclick="switchScreen('screen-material-2')">LANJUT ▶</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- HALAMAN MATERI 2 (C4 - SLIDE 2) -->
+    <div id="screen-material-2" class="game-screen" style="background-image: url('assets/bg_pembuka.jpg'); background-size: cover; background-position: center;">
+      <div class="mascot-left"><img src="assets/maskot_pr.png" alt="Maskot Perempuan" /></div>
+      <div class="mascot-right"><img src="assets/maskot_lk.png" alt="Maskot Laki-Laki" /></div>
+
+      <div class="material-page-container">
+        <div class="material-header-box"><h2 class="material-title">YUK, PAHAMI CARA MENGHITUNG!</h2></div>
+        <div class="material-content-grid">
+          <div class="material-card">
+            <div class="material-card-title"><span>✏️</span> A. Persamaan Linear (PLSV)</div>
+            <div class="material-card-body">Digunakan untuk mencari nilai variabel yang belum diketahui.<br><i>Contoh:</i> Dua pensil Rp6.000. Berapa harga 1 pensil?
+              <div style="background: #FAF3EB; border: 2px dashed #A8795D; border-radius: 8px; padding: 4px 8px; margin-top: 4px; font-size: min(1vw, 10px);">• <b>2x = 6.000</b><br>• x = 6.000 : 2<br>• <b>x = 3.000 (Harga 1 pensil)</b></div>
+            </div>
+          </div>
+          <div class="material-card">
+            <div class="material-card-title"><span>🏷️</span> B. Pertidaksamaan (PtLSV)</div>
+            <div class="material-card-body">Simbol: &lt;, &gt;, &le;, &ge;.<br><i>Contoh:</i> Uang Rp10.000 beli permen Rp2.000/buah (x).
+              <div style="background: #FAF3EB; border: 2px dashed #A8795D; border-radius: 8px; padding: 4px 8px; margin-top: 4px; font-size: min(1vw, 10px);">• <b>2.000x &le; 10.000</b><br>• x &le; 10.000 : 2.000<br>• <b>x &le; 5 (Paling banyak 5 buah)</b></div>
+            </div>
+          </div>
+        </div>
+        <div class="material-nav-bar">
+          <button class="btn-game btn-materi" onclick="switchScreen('screen-material-1')">◀ KEMBALI</button>
+          <button class="btn-game btn-start" style="padding: 6px 20px; font-size: min(1.4vw, 14px); animation: none;" onclick="switchScreen('screen-material-3')">LANJUT ▶</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- HALAMAN MATERI 3 (C4 - SLIDE 3) -->
+    <div id="screen-material-3" class="game-screen" style="background-image: url('assets/bg_pembuka.jpg'); background-size: cover; background-position: center;">
+      <div class="mascot-left"><img src="assets/maskot_pr.png" alt="Maskot Perempuan" /></div>
+      <div class="mascot-right"><img src="assets/maskot_lk.png" alt="Maskot Laki-Laki" /></div>
+
+      <div class="material-page-container">
+        <div class="material-header-box"><h2 class="material-title">SIAP JADI PEMBELI CERDAS?</h2></div>
+        <div class="material-card" style="width: 100%; flex: none; margin-bottom: 12px; padding: 16px; text-align: center;">
+          <div class="material-card-title" style="justify-content: center; font-size: min(1.5vw, 15px); color: #A8795D;">⭐ RINGKASAN MATERI ⭐</div>
+          <div class="material-card-body" style="font-size: min(1.2vw, 12px); line-height: 1.4; text-align: left; margin-top: 6px;">
+            • <b>PLSV:</b> Mencari nilai variabel yang belum diketahui melalui persamaan.<br>
+            • <b>PtLSV:</b> Menentukan nilai variabel yang memenuhi suatu syarat melalui pertidaksamaan.<br><br>
+            <div style="text-align: center; color: #78947A; font-weight: 700;">"Sekarang kamu sudah mengenal PLSV dan PtLSV. Yuk, bersiap menyelesaikan tantangan SMART SHOP!"</div>
+          </div>
+        </div>
+        <div class="material-nav-bar">
+          <button class="btn-game btn-materi" onclick="switchScreen('screen-material-2')">◀ KEMBALI</button>
+          <button class="btn-game btn-start" style="padding: 7px 24px; font-size: min(1.4vw, 14px); background-color: #78947A;" onclick="switchScreen('screen-c1')">SIAP TANTANGAN 🚀</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- MODUL PEMBAHASAN REKAPAN JAWABAN TAHAP 1 (SLIDE 1 - 5) -->
+    <div id="screen-review-1" class="game-screen" style="background-image: url('assets/bg_pembuka.jpg'); background-size: cover; background-position: center;">
+      <div class="challenge-top-indicator">⭐ Pembahasan Tahap 1 | Slide 1 dari 5 ⭐</div>
+      <div class="c3-container" style="top: 10%; height: 82%;">
+        <div class="c3-card" style="height: 100%; justify-content: space-between; text-align: left; padding: 20px 24px;">
+          <div>
+            <h3 class="c3-title" style="color: #78947A; margin-bottom: 6px;">✏️ Pembahasan Tantangan 1</h3>
+            <div class="challenge-question-box" style="text-align: left;">Rani membeli 3 pensil dengan harga yang sama. Total harga semua pensil adalah Rp12.000. Berapa harga 1 pensil?</div>
+            <div class="challenge-explanation-box" style="display: block; margin-top: 10px;">
+              <div class="challenge-explanation-title">💡 Penjelasan:</div>
+              Persamaan: 3x = 12.000.<br>Untuk mencari harga 1 pensil (x), bagi total harga dengan jumlah pensil: x = 12.000 ÷ 3 = <b>Rp4.000</b>.
+            </div>
+          </div>
+          <div class="c2-nav-buttons">
+            <button class="btn-game btn-materi" onclick="switchScreen('screen-c5')">◀ KEMBALI KE MENU</button>
+            <button class="btn-game btn-start" style="padding: 6px 20px; font-size: min(1.4vw, 14px); animation: none;" onclick="switchScreen('screen-review-2')">LANJUT ▶</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div id="screen-review-2" class="game-screen" style="background-image: url('assets/bg_pembuka.jpg'); background-size: cover; background-position: center;">
+      <div class="challenge-top-indicator">⭐ Pembahasan Tahap 1 | Slide 2 dari 5 ⭐</div>
+      <div class="c3-container" style="top: 10%; height: 82%;">
+        <div class="c3-card" style="height: 100%; justify-content: space-between; text-align: left; padding: 20px 24px;">
+          <div>
+            <h3 class="c3-title" style="color: #78947A; margin-bottom: 6px;">✏️ Pembahasan Tantangan 2</h3>
+            <div class="challenge-question-box" style="text-align: left;">Di dalam keranjang terdapat 3 botol jus dengan harga yang sama. Jika total harga ketiga botol jus adalah Rp18.000, berapakah harga satu botol jus?</div>
+            <div class="challenge-explanation-box" style="display: block; margin-top: 10px;">
+              <div class="challenge-explanation-title">💡 Penjelasan:</div>
+              Persamaan: 3x = 18.000.<br>Untuk mendapatkan nilai x, bagi total harga dengan 3: x = 18.000 ÷ 3 = <b>Rp6.000</b>.
+            </div>
+          </div>
+          <div class="c2-nav-buttons">
+            <button class="btn-game btn-materi" onclick="switchScreen('screen-review-1')">◀ KEMBALI</button>
+            <button class="btn-game btn-start" style="padding: 6px 20px; font-size: min(1.4vw, 14px); animation: none;" onclick="switchScreen('screen-review-3')">LANJUT ▶</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div id="screen-review-3" class="game-screen" style="background-image: url('assets/bg_pembuka.jpg'); background-size: cover; background-position: center;">
+      <div class="challenge-top-indicator">⭐ Pembahasan Tahap 1 | Slide 3 dari 5 ⭐</div>
+      <div class="c3-container" style="top: 10%; height: 82%;">
+        <div class="c3-card" style="height: 100%; justify-content: space-between; text-align: left; padding: 20px 24px;">
+          <div>
+            <h3 class="c3-title" style="color: #78947A; margin-bottom: 6px;">✏️ Pembahasan Tantangan 3</h3>
+            <div class="challenge-question-box" style="text-align: left;">Rani membeli sebuah kotak hadiah. Setelah mendapat potongan harga Rp4.000, Rani membayar Rp16.000. Berapakah harga awal kotak hadiah?</div>
+            <div class="challenge-explanation-box" style="display: block; margin-top: 10px;">
+              <div class="challenge-explanation-title">💡 Penjelasan:</div>
+              Persamaan: x − 4.000 = 16.000.<br>Pindahkan −4.000 ke ruas kanan menjadi penjumlahan: x = 16.000 + 4.000 = <b>Rp20.000</b>.
+            </div>
+          </div>
+          <div class="c2-nav-buttons">
+            <button class="btn-game btn-materi" onclick="switchScreen('screen-review-2')">◀ KEMBALI</button>
+            <button class="btn-game btn-start" style="padding: 6px 20px; font-size: min(1.4vw, 14px); animation: none;" onclick="switchScreen('screen-review-4')">LANJUT ▶</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div id="screen-review-4" class="game-screen" style="background-image: url('assets/bg_pembuka.jpg'); background-size: cover; background-position: center;">
+      <div class="challenge-top-indicator">⭐ Pembahasan Tahap 1 | Slide 4 dari 5 ⭐</div>
+      <div class="c3-container" style="top: 10%; height: 82%;">
+        <div class="c3-card" style="height: 100%; justify-content: space-between; text-align: left; padding: 20px 24px;">
+          <div>
+            <h3 class="c3-title" style="color: #78947A; margin-bottom: 6px;">✏️ Pembahasan Tantangan 4</h3>
+            <div class="challenge-question-box" style="text-align: left;">Di SMART SHOP, harga sebuah buku ditambah Rp4.000 sama dengan Rp12.000. Berapakah harga buku tersebut?</div>
+            <div class="challenge-explanation-box" style="display: block; margin-top: 10px;">
+              <div class="challenge-explanation-title">💡 Penjelasan:</div>
+              Persamaan: x + 4.000 = 12.000.<br>Pindahkan +4.000 ke ruas kanan menjadi pengurangan: x = 12.000 − 4.000 = <b>Rp8.000</b>.
+            </div>
+          </div>
+          <div class="c2-nav-buttons">
+            <button class="btn-game btn-materi" onclick="switchScreen('screen-review-3')">◀ KEMBALI</button>
+            <button class="btn-game btn-start" style="padding: 6px 20px; font-size: min(1.4vw, 14px); animation: none;" onclick="switchScreen('screen-review-5')">LANJUT ▶</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div id="screen-review-5" class="game-screen" style="background-image: url('assets/bg_pembuka.jpg'); background-size: cover; background-position: center;">
+      <div class="challenge-top-indicator">⭐ Pembahasan Tahap 1 | Slide 5 dari 5 (Bos Kasir) ⭐</div>
+      <div class="c3-container" style="top: 10%; height: 82%;">
+        <div class="c3-card" style="height: 100%; justify-content: space-between; text-align: left; padding: 20px 24px;">
+          <div>
+            <h3 class="c3-title" style="color: #78947A; margin-bottom: 6px;">🛒 Pembahasan Tantangan 5 (Bos Kasir)</h3>
+            <div class="challenge-question-box" style="text-align: left;">Membeli 4 buku tulis dengan harga sama dan 1 pensil seharga Rp3.000. Total belanja Rp23.000. Berapa harga 1 buku tulis?</div>
+            <div class="challenge-explanation-box" style="display: block; margin-top: 10px;">
+              <div class="challenge-explanation-title">💡 Penjelasan:</div>
+              4x + 3.000 = 23.000 &rarr; 4x = 20.000 &rarr; x = 20.000 ÷ 4 = <b>Rp5.000</b>.
+            </div>
+          </div>
+          <div class="c2-nav-buttons">
+            <button class="btn-game btn-materi" onclick="switchScreen('screen-review-4')">◀ KEMBALI</button>
+            <button class="btn-game btn-start" style="padding: 6px 20px; font-size: min(1.4vw, 14px); animation: none; background-color: #78947A;" onclick="finishReviewAndGoC5()">SELESAI &amp; KEMBALI KE C5 ▶</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- HALAMAN C5 (NAVIGASI TAHAPAN MISI) -->
+    <div id="screen-c5" class="game-screen" style="background-image: url('assets/bg_pembuka.jpg'); background-size: cover; background-position: center;">
+      <div class="mascot-left"><img src="assets/maskot_pr.png" alt="Maskot Perempuan" /></div>
+      <div class="mascot-right"><img src="assets/maskot_lk.png" alt="Maskot Laki-Laki" /></div>
+
+      <div class="c5-container">
+        <div class="c5-header-box">
+          <h2 class="c5-title">🛒 PILIH MISIMU!</h2>
+          <p class="c5-intro">Petualanganmu di SMART SHOP terdiri dari dua misi. Selesaikan Misi Persamaan terlebih dahulu untuk membuka Misi Pertidaksamaan. Yuk, buktikan kalau kamu pembeli cerdas, <b id="c5PlayerNameText" style="color: #78947A;">Sobat Belanja</b>!</p>
+        </div>
+        <div class="c5-stages-grid">
+          <!-- Kartu Tahap 1 -->
+          <div class="c5-stage-card" id="cardStage1" onclick="handleStage1CardClick()" style="cursor: pointer;" title="Klik untuk mulai/melihat misi tahap 1">
+            <div class="c5-stage-title">
+              <span>✏️ TAHAP 1 — MISI PERSAMAAN</span>
+              <button id="c5BtnSeeScore" class="btn-inline-score" style="display: none;" onclick="event.stopPropagation(); openScoreModalC5()">⭐ Lihat Poin</button>
+            </div>
+            <div class="c5-stage-desc"><b>Materi:</b> Persamaan Linear Satu Variabel (PLSV).<br>Menghitung harga pasti barang belanjaan di toko.</div>
+            <div id="badgeStage1" class="c5-status-badge status-ready">BELUM DIMULAI</div>
+          </div>
+          <!-- Kartu Tahap 2 -->
+          <div class="c5-stage-card locked" id="cardStage2" onclick="handleStage2CardClick()" style="cursor: pointer;">
+            <div class="c5-stage-title"><span>🔒</span> TAHAP 2 — MISI PERTIDAKSAMAAN</div>
+            <div class="c5-stage-desc"><b>Materi:</b> Pertidaksamaan Linear Satu Variabel (PtLSV).<br>Menentukan batas maksimum kupon belanja.</div>
+            <div id="badgeStage2" class="c5-status-badge status-locked">TERKUNCI 🔒</div>
+          </div>
+        </div>
+        <div class="c5-nav-bar">
+          <button class="btn-game btn-materi" onclick="switchScreen('screen-c2')">◀ KEMBALI</button>
+          <div style="display: flex; gap: 10px;">
+            <button class="btn-game btn-cara" style="background-color: #A8795D;" onclick="switchScreen('screen-c1')">🏠 BERANDA</button>
+            <button class="btn-game btn-start" style="padding: 6px 20px; font-size: min(1.4vw, 14px); animation: none;" onclick="proceedToCurrentStage()">LANJUT ▶</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- HALAMAN C6 (PENGANTAR TAHAP 1: MISI PERSAMAAN) -->
+    <div id="screen-c6" class="game-screen" style="background-image: url('assets/bg_gameplay.jpg'); background-size: cover; background-position: center;">
+      <div class="mascot-left" style="left: -65%;"><img src="assets/maskot_pr.png" alt="Maskot Perempuan" /></div>
+
+      <div class="c6-container">
+        <div class="c6-header-box">
+          <h2 class="c6-title">TAHAP 1: MISI PERSAMAAN</h2>
+          <p class="c6-subtitle">Siap Menjadi Pembeli Cerdas?</p>
+        </div>
+        <div class="c6-info-card">
+          <div class="material-card-title" style="font-size: min(1.3vw, 13px);"><span>🛒</span> SELAMAT DATANG DI SMART SHOP!</div>
+          <p class="c6-desc-text">Selamat datang di toko SMART SHOP, <b id="c6PlayerNameText" style="color: #78947A;">Sobat Belanja</b>! Di misi pertama ini, kamu akan menyelesaikan 5 tantangan Persamaan Linear Satu Variabel (PLSV). Gunakan kemampuan berhitungmu untuk membantu menyelesaikan setiap tantangan. Ayo, mulai petualanganmu!</p>
+          <div class="c6-meta-list">
+            <div class="c6-meta-item"><span><b>Nama Misi:</b></span> <span>Misi Persamaan</span></div>
+            <div class="c6-meta-item"><span><b>Materi:</b></span> <span>Persamaan Linear Satu Variabel (PLSV)</span></div>
+            <div class="c6-meta-item"><span><b>Jumlah Tantangan:</b></span> <span>5 Tantangan</span></div>
+            <div class="c6-meta-item">
+              <span><b>Status Misi:</b></span> 
+              <div style="display: flex; align-items: center; gap: 8px;">
+                <span id="c6StatusText" style="color: #78947A; font-weight: 700;">Belum dimulai</span>
+                <button id="c6BtnSeeScore" class="btn-inline-score" onclick="openScoreModalC6()">⭐ Lihat Poin</button>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="c6-nav-bar">
+          <button class="btn-game btn-materi" onclick="switchScreen('screen-c5')">◀ KEMBALI</button>
+          <div style="display: flex; gap: 10px;">
+            <button class="btn-game btn-cara" style="background-color: #A8795D;" onclick="switchScreen('screen-c1')">🏠 BERANDA</button>
+            <button id="c6BtnMainAction" class="btn-game btn-start" style="padding: 7px 24px; font-size: min(1.4vw, 14px); background-color: #78947A;" onclick="switchScreen('screen-c7')">MULAI MISI ▶</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- HALAMAN C7 (INFORMASI PEMAIN & TAHAP 1) -->
+    <div id="screen-c7" class="game-screen" style="background-image: url('assets/bg_gameplay.jpg'); background-size: cover; background-position: center;">
+      <div class="mascot-left"><img src="assets/maskot_pr.png" alt="Maskot Perempuan" /></div>
+      <div class="mascot-right" style="right: -65%;"><img src="assets/maskot_pr.png" alt="Maskot Perempuan" /></div>
+
+      <div class="c7-container">
+        <div class="c6-header-box" style="margin-bottom: 10px; width: 100%;">
+          <h2 class="c6-title">SIAP BERBELANJA?</h2>
+          <p class="c6-subtitle">Kenali informasi pemainmu sebelum memulai tantangan!</p>
+        </div>
+        <div class="c7-grid-info">
+          <div class="c7-card c7-card-profile">
+            <span class="c7-label-small">👤 NAMA PEMAIN</span>
+            <div id="c7PlayerNameText" class="c7-value-large" style="color: #78947A;">Sobat Belanja</div>
+          </div>
+          <div class="c7-card c7-card-score">
+            <span class="c7-label-small">⭐ SKOR AWAL</span>
+            <div id="c7PlayerScoreText" class="c7-value-large">0 POIN</div>
+          </div>
+        </div>
+        <div class="c7-card-progress">
+          <div style="display: flex; justify-content: space-between; align-items: center;">
+            <span class="c7-label-small">🛒 TAHAP 1 — PERSAMAAN LINEAR SATU VARIABEL (PLSV)</span>
+            <div style="display: flex; align-items: center; gap: 8px;">
+              <span id="c7ProgressText" style="font-family: 'Baloo 2', cursive; font-size: min(1.1vw, 11px); font-weight: 800; color: #A8795D;">0/5 TANTANGAN</span>
+              <button id="c7BtnSeeScore" class="btn-inline-score" onclick="openScoreModalC7()">⭐ Lihat Poin</button>
+            </div>
+          </div>
+          <p style="font-size: min(1.05vw, 10.5px); color: #2c2523; line-height: 1.35;">Selesaikan persamaan linear untuk menentukan harga pasti barang belanjaan di minimarket.</p>
+          <div class="c7-challenges-dots">
+            <div class="c7-dot" id="dot-1">1</div>
+            <div class="c7-dot" id="dot-2">2</div>
+            <div class="c7-dot" id="dot-3">3</div>
+            <div class="c7-dot" id="dot-4">4</div>
+            <div class="c7-dot" id="dot-5">5</div>
+          </div>
+        </div>
+        <div class="c7-note-box">💡 Jawab soal dengan benar untuk mendapatkan poin dan membuka tahap berikutnya!</div>
+        <div class="c6-nav-bar">
+          <button class="btn-game btn-materi" onclick="switchScreen('screen-c6')">◀ KEMBALI</button>
+          <button class="btn-game btn-start" style="padding: 7px 28px; font-size: min(1.8vw, 17px); animation: none;" onclick="handleC7NextNavigation()">LANJUT ▶</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- HALAMAN C8 (TANTANGAN 1) -->
+    <div id="screen-c8" class="game-screen" style="background-image: url('assets/bg_soal.png'); background-size: cover; background-position: center;">
+      <div class="challenge-top-indicator">⭐ Tahap 1 | Tantangan 1 dari 5 ⭐</div>
+      <div class="challenge-score-indicator" id="c8ScoreDisplay">Skor : 0</div>
+      <div class="mascot-left" style="left: -65%;"><img src="assets/maskot_pr.png" alt="Maskot Perempuan" /></div>
+
+      <div class="challenge-container">
+        <div class="challenge-header-box"><h2 class="challenge-title">Tebak Harga</h2></div>
+        <div class="challenge-instruction">Yuk, cari harga barang yang belum diketahui!</div>
+        <div class="challenge-question-box">Rani membeli 3 pensil dengan harga yang sama. Total harga semua pensil adalah Rp12.000. Berapa harga 1 pensil?</div>
+        <div class="challenge-options-grid">
+          <button class="challenge-option-btn" onclick="checkAnswerC8('A', false)">A. Rp3.000</button>
+          <button class="challenge-option-btn" onclick="checkAnswerC8('B', true)">B. Rp4.000</button>
+          <button class="challenge-option-btn" onclick="checkAnswerC8('C', false)">C. Rp5.000</button>
+          <button class="challenge-option-btn" onclick="checkAnswerC8('D', false)">D. Rp6.000</button>
+        </div>
+        <div id="c8Feedback" class="challenge-feedback-box"></div>
+        <div id="c8Explanation" class="challenge-explanation-box">
+          <div class="challenge-explanation-title">💡 Pembahasan Langkah Penyelesaian:</div>
+          Persamaan: 3x = 12.000. Untuk mencari harga 1 pensil (x), bagi total harga dengan jumlah pensil: x = 12.000 ÷ 3 = Rp4.000.
+        </div>
+        <div class="challenge-bottom-row">
+          <div style="flex-grow: 1;"></div>
+          <button id="c8BtnNext" class="btn-game btn-start" style="display: none; padding: 6px 24px; font-size: min(1.4vw, 14px); animation: none; flex-shrink: 0;" onclick="switchScreen('screen-c9')">Lanjut ▶</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- HALAMAN C9 (TANTANGAN 2) -->
+    <div id="screen-c9" class="game-screen" style="background-image: url('assets/bg_soal.png'); background-size: cover; background-position: center;">
+      <div class="challenge-top-indicator">⭐ Tahap 1 | Tantangan 2 dari 5 ⭐</div>
+      <div class="challenge-score-indicator" id="c9ScoreDisplay">Skor : 0</div>
+      <div class="mascot-left" style="left: -65%;"><img src="assets/maskot_pr.png" alt="Maskot Perempuan" /></div>
+
+      <div class="challenge-container">
+        <div class="challenge-header-box"><h2 class="challenge-title">TANTANGAN 2 — KERANJANG MISTERI</h2></div>
+        <div class="challenge-instruction">TAHAP 1 – PERSAMAAN LINEAR SATU VARIABEL</div>
+        <div class="challenge-question-box">Di dalam keranjang terdapat 3 botol jus dengan harga yang sama. Jika total harga ketiga botol jus adalah Rp18.000, berapakah harga satu botol jus?<br><div style="margin-top: 4px; color: #78947A; font-weight: 800;">Model Matematika: 3x = 18.000</div></div>
+        <div class="challenge-options-grid">
+          <button class="challenge-option-btn" onclick="checkAnswerC9('A', false)">A. Rp4.000</button>
+          <button class="challenge-option-btn" onclick="checkAnswerC9('B', false)">B. Rp5.000</button>
+          <button class="challenge-option-btn" onclick="checkAnswerC9('C', true)">C. Rp6.000</button>
+          <button class="challenge-option-btn" onclick="checkAnswerC9('D', false)">D. Rp9.000</button>
+        </div>
+        <div id="c9Feedback" class="challenge-feedback-box"></div>
+        <div id="c9Explanation" class="challenge-explanation-box">
+          <div class="challenge-explanation-title">💡 Pembahasan Langkah Penyelesaian:</div>
+          Persamaan: 3x = 18.000. Untuk mendapatkan nilai x, bagi total harga dengan 3: x = 18.000 ÷ 3 = Rp6.000.
+        </div>
+        <div class="challenge-bottom-row">
+          <div style="flex-grow: 1;"></div>
+          <button id="c9BtnNext" class="btn-game btn-start" style="display: none; padding: 6px 24px; font-size: min(1.4vw, 14px); animation: none; flex-shrink: 0;" onclick="switchScreen('screen-c10')">Lanjut ▶</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- HALAMAN C10 (TANTANGAN 3 - BAGIAN 1) -->
+    <div id="screen-c10" class="game-screen" style="background-image: url('assets/bg_soal.png'); background-size: cover; background-position: center;">
+      <div class="challenge-top-indicator">⭐ Tahap 1 | Tantangan 3 dari 5 (1) ⭐</div>
+      <div class="challenge-score-indicator" id="c10ScoreDisplay">Skor : 0</div>
+      <div class="mascot-left" style="left: -65%;"><img src="assets/maskot_pr.png" alt="Maskot Perempuan" /></div>
+
+      <div class="challenge-container">
+        <div class="challenge-header-box"><h2 class="challenge-title">TANTANGAN 3 — KASIR CERDAS</h2></div>
+        <div class="challenge-instruction">TAHAP 1 – PERSAMAAN LINEAR SATU VARIABEL</div>
+        <div class="challenge-question-box">Rani membeli sebuah kotak hadiah. Setelah mendapat potongan harga Rp4.000, Rani membayar Rp16.000. Berapakah harga awal kotak hadiah sebelum mendapat potongan harga?<br><div style="margin-top: 4px; color: #78947A; font-weight: 800;">Model Matematika: x − 4.000 = 16.000</div></div>
+        <div class="challenge-options-grid">
+          <button class="challenge-option-btn" onclick="checkAnswerC10('A', false)">A. Rp12.000</button>
+          <button class="challenge-option-btn" onclick="checkAnswerC10('B', false)">B. Rp16.000</button>
+          <button class="challenge-option-btn" onclick="checkAnswerC10('C', true)">C. Rp20.000</button>
+          <button class="challenge-option-btn" onclick="checkAnswerC10('D', false)">D. Rp24.000</button>
+        </div>
+        <div id="c10Feedback" class="challenge-feedback-box"></div>
+        <div id="c10Explanation" class="challenge-explanation-box">
+          <div class="challenge-explanation-title">💡 Pembahasan Langkah Penyelesaian:</div>
+          Persamaan: x − 4.000 = 16.000. Pindahkan −4.000 ke ruas kanan menjadi penjumlahan: x = 16.000 + 4.000 = Rp20.000.
+        </div>
+        <div class="challenge-bottom-row">
+          <div style="flex-grow: 1;"></div>
+          <button id="c10BtnNext" class="btn-game btn-start" style="display: none; padding: 6px 24px; font-size: min(1.4vw, 14px); animation: none; flex-shrink: 0;" onclick="switchScreen('screen-c11')">Lanjut ▶</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- HALAMAN C11 (TANTANGAN 3 - BAGIAN 2 / VARIASI) -->
+    <div id="screen-c11" class="game-screen" style="background-image: url('assets/bg_soal.png'); background-size: cover; background-position: center;">
+      <div class="challenge-top-indicator">⭐ Tahap 1 | Tantangan 3 dari 5 (2) ⭐</div>
+      <div class="challenge-score-indicator" id="c11ScoreDisplay">Skor : 0</div>
+      <div class="mascot-left" style="left: -65%;"><img src="assets/maskot_pr.png" alt="Maskot Perempuan" /></div>
+
+      <div class="challenge-container">
+        <div class="challenge-header-box"><h2 class="challenge-title">KASIR CERDAS — VARIASI</h2></div>
+        <div class="challenge-instruction">TAHAP 1 – PERSAMAAN LINEAR SATU VARIABEL</div>
+        <div class="challenge-question-box">Rani membeli 4 pensil dengan harga yang sama. Setelah ditambah biaya kantong belanja sebesar Rp2.000, total belanja Rani menjadi Rp14.000. Berapakah harga satu pensil?<br><div style="margin-top: 4px; color: #78947A; font-weight: 800;">Model Matematika: 4x + 2.000 = 14.000</div></div>
+        <div class="challenge-options-grid" style="grid-template-columns: repeat(3, 1fr);">
+          <button class="challenge-option-btn" onclick="checkAnswerC11('A', false)">A. Rp2.000</button>
+          <button class="challenge-option-btn" onclick="checkAnswerC11('B', true)">B. Rp3.000</button>
+          <button class="challenge-option-btn" onclick="checkAnswerC11('C', false)">C. Rp4.000</button>
+        </div>
+        <div id="c11Feedback" class="challenge-feedback-box"></div>
+        <div id="c11Explanation" class="challenge-explanation-box">
+          <div class="challenge-explanation-title">💡 Pembahasan Langkah Penyelesaian:</div>
+          Persamaan: 4x + 2.000 = 14.000. Kurangi kedua ruas dengan 2.000 menjadi 4x = 12.000, lalu bagi dengan 4 sehingga x = 3.000.
+        </div>
+        <div class="challenge-bottom-row">
+          <div style="flex-grow: 1;"></div>
+          <button id="c11BtnNext" class="btn-game btn-start" style="display: none; padding: 6px 24px; font-size: min(1.4vw, 14px); animation: none; flex-shrink: 0;" onclick="switchScreen('screen-c12')">Lanjut ▶</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- HALAMAN C12 (TANTANGAN 4) -->
+    <div id="screen-c12" class="game-screen" style="background-image: url('assets/bg_soal.png'); background-size: cover; background-position: center;">
+      <div class="challenge-top-indicator">⭐ Tahap 1 | Tantangan 4 dari 5 ⭐</div>
+      <div class="challenge-score-indicator" id="c12ScoreDisplay">Skor : 0</div>
+      <div class="mascot-left" style="left: -65%;"><img src="assets/maskot_pr.png" alt="Maskot Perempuan" /></div>
+
+      <div class="challenge-container">
+        <div class="challenge-header-box"><h2 class="challenge-title">TANTANGAN 4 — HITUNG BERTAHAP</h2></div>
+        <div class="challenge-instruction">TAHAP 1 – PERSAMAAN LINEAR SATU VARIABEL</div>
+        <div class="challenge-question-box">Di SMART SHOP, harga sebuah buku ditambah Rp4.000 sama dengan Rp12.000. Berapakah harga buku tersebut?<br><div style="margin-top: 4px; color: #78947A; font-weight: 800;">Bentuk Persamaan: x + 4.000 = 12.000</div></div>
+        <div class="challenge-options-grid" style="grid-template-columns: repeat(3, 1fr);">
+          <button class="challenge-option-btn" onclick="checkAnswerC12('A', false)">A. Rp6.000</button>
+          <button class="challenge-option-btn" onclick="checkAnswerC12('B', true)">B. Rp8.000</button>
+          <button class="challenge-option-btn" onclick="checkAnswerC12('C', false)">C. Rp16.000</button>
+        </div>
+        <div id="c12Feedback" class="challenge-feedback-box"></div>
+        <div id="c12Explanation" class="challenge-explanation-box">
+          <div class="challenge-explanation-title">💡 Pembahasan Langkah Penyelesaian:</div>
+          Persamaan: x + 4.000 = 12.000. Pindahkan +4.000 ke ruas kanan menjadi pengurangan: x = 12.000 − 4.000 = Rp8.000.
+        </div>
+        <div class="challenge-bottom-row">
+          <div style="flex-grow: 1;"></div>
+          <button id="c12BtnNext" class="btn-game btn-start" style="display: none; padding: 6px 24px; font-size: min(1.4vw, 14px); animation: none; flex-shrink: 0;" onclick="switchScreen('screen-c15')">Lanjut ▶</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- HALAMAN C15 (TANTANGAN 5 - BAGIAN 1: BOS KASIR) -->
+    <div id="screen-c15" class="game-screen" style="background-image: url('assets/bg_soal.png'); background-size: cover; background-position: center;">
+      <div class="challenge-top-indicator">⭐ Tahap 1 | Tantangan 5 dari 5 (Bos Kasir) ⭐</div>
+      <div class="challenge-score-indicator" id="c15ScoreDisplay">Skor : 0</div>
+
+      <div class="mascot-left" style="left: -65%;"><img src="assets/maskot_pr.png" alt="Maskot Perempuan" /></div>
+      <div class="mascot-right" style="right: -65%;"><img src="assets/maskot_lk.png" alt="Maskot Laki-Laki" /></div>
+
+      <div class="challenge-container">
+        <div class="challenge-header-box" style="background-color: #78947A;">
+          <h2 class="challenge-title">🛒 TANTANGAN BOS KASIR</h2>
+        </div>
+        <div class="challenge-instruction">Ujian Terakhir Tahap 1 – Persamaan Linear Satu Variabel (PLSV)</div>
+
+        <div class="challenge-question-box">
+          Seorang pelanggan membeli 4 buku tulis dengan harga yang sama. Ia juga membeli sebuah pensil seharga Rp3.000. Total belanjanya Rp23.000. Berapakah harga satu buku tulis?<br>
+          <div style="margin-top: 4px; color: #78947A; font-weight: 800;">Model Matematika: 4x + 3.000 = 23.000</div>
+        </div>
+
+        <div class="challenge-options-grid">
+          <button class="challenge-option-btn" onclick="checkAnswerC15('A', false)">A. Rp4.000</button>
+          <button class="challenge-option-btn" onclick="checkAnswerC15('B', true)">B. Rp5.000</button>
+          <button class="challenge-option-btn" onclick="checkAnswerC15('C', false)">C. Rp6.000</button>
+          <button class="challenge-option-btn" onclick="checkAnswerC15('D', false)">D. Rp7.000</button>
+        </div>
+
+        <div id="c15Feedback" class="challenge-feedback-box"></div>
+        <div id="c15Explanation" class="challenge-explanation-box">
+          <div class="challenge-explanation-title">💡 Pembahasan Langkah Penyelesaian:</div>
+          4x + 3.000 = 23.000<br>
+          4x = 23.000 − 3.000 = 20.000<br>
+          x = 20.000 ÷ 4 = 5.000<br>
+          <b>Jadi, harga satu buku tulis adalah Rp5.000.</b>
+        </div>
+
+        <div class="challenge-bottom-row">
+          <div style="flex-grow: 1;"></div>
+          <button id="c15BtnNext" class="btn-game btn-start" style="display: none; padding: 6px 24px; font-size: min(1.4vw, 14px); animation: none; flex-shrink: 0;" onclick="switchScreen('screen-c16')">Lanjut ▶</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- HALAMAN C16 (TANTANGAN 5 - BAGIAN 2 / KESIMPULAN BOS KASIR) -->
+    <div id="screen-c16" class="game-screen" style="background-image: url('assets/bg_soal.png'); background-size: cover; background-position: center;">
+      <div class="challenge-top-indicator">⭐ Tahap 1 | Tantangan 5 (Kesimpulan) ⭐</div>
+      <div class="challenge-score-indicator" id="c16ScoreDisplay">Skor : 0</div>
+      <div class="mascot-left" style="left: -65%;"><img src="assets/maskot_pr.png" alt="Maskot Perempuan" /></div>
+
+      <div class="challenge-container">
+        <div class="challenge-header-box" style="background-color: #78947A;"><h2 class="challenge-title">EVALUASI AKHIR TAHAP 1</h2></div>
+        <div class="challenge-instruction">TAHAP 1 – PERSAMAAN LINEAR SATU VARIABEL</div>
+        <div class="challenge-question-box" style="text-align: left; padding: 14px;">
+          <h4 style="font-family: 'Baloo 2', cursive; color: #78947A; margin-bottom: 6px;">🎉 SELAMAT! Kamu telah menyelesaikan seluruh rangkaian Tantangan Bos Kasir!</h4>
+          <p style="font-size: min(1.1vw, 11px); line-height: 1.4; color: #2c2523;">Semua persamaan linear satu variabel dari Tantangan 1 hingga 5 telah berhasil kamu taklukkan. Klik tombol di bawah untuk melihat pemberitahuan misi selesai!</p>
+        </div>
+        <div class="challenge-bottom-row" style="margin-top: 20px;">
+          <div style="flex-grow: 1;"></div>
+          <button class="btn-game btn-start" style="padding: 8px 28px; font-size: min(1.5vw, 15px); animation: none; flex-shrink: 0; background-color: #78947A;" onclick="completeStage1AndGoC18()">SELESAIKAN MISI ▶</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- HALAMAN C18 (STATUS MISI PERSAMAAN SELESAI & TOMBOL PEMBAHASAN) -->
+    <div id="screen-c18" class="game-screen" style="background-image: url('assets/bg_pembuka.jpg'); background-size: cover; background-position: center;">
+      <div class="mascot-left"><img src="assets/maskot_pr.png" alt="Maskot Perempuan" /></div>
+      <div class="mascot-right"><img src="assets/maskot_lk.png" alt="Maskot Laki-Laki" /></div>
+
+      <div class="c18-container">
+        <div class="c18-banner">🎉 SELAMAT! MISI TAHAP 1 SELESAI 🎉</div>
+        <p style="font-size: min(1.3vw, 13px); color: #2c2523; line-height: 1.4; margin-bottom: 12px;">
+          Luar biasa, <b id="c18PlayerNameText" style="color: #78947A;">Sobat Belanja</b>! Kamu telah berhasil menaklukkan seluruh tantangan Misi Persamaan Linear!
+        </p>
+        <div class="c6-meta-list" style="width: 100%; margin-bottom: 16px;">
+          <div class="c6-meta-item"><span><b>Status Tahap 1:</b></span> <span style="color: #2e7d32; font-weight: 800;">SELESAI ✔</span></div>
+          <div class="c6-meta-item"><span><b>Misi Pertidaksamaan (Tahap 2):</b></span> <span style="color: #2e7d32; font-weight: 800;">TERBUKA ✔</span></div>
+        </div>
+        <div style="display: flex; gap: 14px; justify-content: center;">
+          <button class="btn-game btn-cara" style="background-color: #A8795D;" onclick="switchScreen('screen-c5')">◀ KEMBALI KE MENU</button>
+          <button class="btn-start" style="padding: 10px 28px; font-size: min(1.5vw, 15px); animation: none; background-color: #78947A;" onclick="switchScreen('screen-review-1')">📖 PEMBAHASAN ▶</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- HALAMAN C20 (REKAPITULASI POIN) -->
+    <div id="screen-c20" class="game-screen" style="background-image: url('assets/bg_pembuka.jpg'); background-size: cover; background-position: center;">
+      <div class="mascot-left"><img src="assets/maskot_pr.png" alt="Maskot Perempuan" /></div>
+      <div class="mascot-right"><img src="assets/maskot_lk.png" alt="Maskot Laki-Laki" /></div>
+
+      <div class="c20-container">
+        <div class="c6-header-box" style="margin-bottom: 6px; width: 100%;">
+          <h2 class="c6-title">⭐ REKAPITULASI POIN ⭐</h2>
+          <p class="c6-subtitle">Perolehan Skor Belajar Misi Persamaan Linear</p>
+        </div>
+        
+        <div class="c20-badge">🏆</div>
+        <div style="font-family: 'Baloo 2', cursive; font-size: min(1.8vw, 18px); color: #A8795D; font-weight: 800;" id="c20PlayerNameText">Sobat Belanja</div>
+        
+        <div class="c20-score-box">
+          <div style="font-size: min(1.1vw, 11px); color: #78947A; font-weight: 800;">TOTAL SKOR SEMENTARA</div>
+          <div class="c20-score-value" id="c20FinalScoreText">0 POIN</div>
+          <div style="font-size: min(1.1vw, 11px); color: #2c2523; margin-top: 4px;" id="c20EvaluationText">Terus kumpulkan poinmu dengan menyelesaikan tantangan!</div>
+        </div>
+
+        <div style="display: flex; gap: 14px; width: 100%; justify-content: center; margin-top: 10px;">
+          <button class="btn-game btn-start" style="padding: 8px 28px; font-size: min(1.4vw, 14px); animation: none; background-color: #78947A;" onclick="closeScoreModal()">KEMBALI ▶</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Modal Cara Bermain -->
+    <div class="modal-overlay" id="modal-cara">
+      <div class="modal-card">
+        <h2 class="modal-title">CARA BERMAIN</h2>
+        <div class="modal-body">
+          <p>1. Pilih barang belanjaan di minimarket sesuai daftar pesanan kasir.</p>
+          <p>2. Selesaikan tantangan persamaan dan hitung total kembalian dengan benar.</p>
+          <p>3. Kumpulkan poin tertinggi dan jadilah pembeli paling teliti!</p>
+        </div>
+        <button class="btn-close" onclick="closeModal('modal-cara')">Tutup</button>
+      </div>
+    </div>
+
+  </div>
+
+  <script>
+    // Menyimpan halaman asal saat membuka modal Lihat Poin
+    let returnScreenFromScore = 'screen-c5';
+
+    function openScoreModalC5() {
+      returnScreenFromScore = 'screen-c5';
+      openScoreModal();
+    }
+    function openScoreModalC6() {
+      returnScreenFromScore = 'screen-c6';
+      openScoreModal();
+    }
+    function openScoreModalC7() {
+      returnScreenFromScore = 'screen-c7';
+      openScoreModal();
+    }
+
+    function openScoreModal() {
+      const playerName = localStorage.getItem('smartShopPlayer') || "Sobat Belanja";
+      const score = localStorage.getItem('smartShopScore') || '0';
+      document.getElementById('c20PlayerNameText').textContent = playerName;
+      document.getElementById('c20FinalScoreText').textContent = `${score} POIN`;
+      
+      const evalBox = document.getElementById('c20EvaluationText');
+      const stage1Completed = localStorage.getItem('smartShopStage1Progress') === '5';
+      if (stage1Completed) {
+        evalBox.textContent = "Luar biasa! Kamu telah menuntaskan Misi Persamaan Linear!";
+      } else {
+        evalBox.textContent = "Semangat! Selesaikan tantangan untuk menambah poinmu.";
+      }
+      switchScreen('screen-c20');
+    }
+
+    function closeScoreModal() {
+      switchScreen(returnScreenFromScore);
+    }
+
+    // ==========================================
+    // AUTO RESET PADA AWAL BUKA GAME (NEW GAME)
+    // ==========================================
+    window.addEventListener('DOMContentLoaded', () => {
+      localStorage.removeItem('smartShopPlayer');
+      localStorage.removeItem('smartShopScore');
+      localStorage.setItem('smartShopStage1Progress', '0');
+      localStorage.setItem('smartShopStageProgress', '1');
+    });
+
+    // ==========================================
+    // KODE WEB AUDIO API EFEK SUARA SMART SHOP
+    // ==========================================
+
+    function playAnswerCorrectSound() {
+      const AudioContext = window.AudioContext || window.webkitAudioContext;
+      const ctx = new AudioContext();
+      const now = ctx.currentTime;
+
+      const masterGain = ctx.createGain();
+      masterGain.gain.setValueAtTime(0.25, now);
+      masterGain.connect(ctx.destination);
+
+      function playNote(freq, startTime, duration, type = 'sine', vol = 1.0) {
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.type = type;
+        osc.frequency.setValueAtTime(freq, startTime);
+        gain.gain.setValueAtTime(0, startTime);
+        gain.gain.linearRampToValueAtTime(0.4 * vol, startTime + 0.02);
+        gain.gain.exponentialRampToValueAtTime(0.001, startTime + duration);
+        osc.connect(gain);
+        gain.connect(masterGain);
+        osc.start(startTime);
+        osc.stop(startTime + duration);
+      }
+
+      playNote(523.25, now, 0.4, 'sine', 0.8);
+      playNote(659.25, now + 0.08, 0.45, 'sine', 0.9);
+      playNote(783.99, now + 0.16, 0.6, 'sine', 1.0);
+      playNote(1046.50, now + 0.16, 0.5, 'sine', 0.4);
+
+      const sparkleNotes = [1318.51, 1567.98, 2093.00];
+      sparkleNotes.forEach((freq, index) => {
+        const sparkleTime = now + 0.26 + (index * 0.04);
+        playNote(freq, sparkleTime, 0.25, 'triangle', 0.12);
+      });
+
+      setTimeout(() => { if (ctx.state !== 'closed') ctx.close(); }, 900);
+    }
+
+    function playAnswerIncorrectSound() {
+      const AudioContext = window.AudioContext || window.webkitAudioContext;
+      const ctx = new AudioContext();
+      const now = ctx.currentTime;
+
+      const masterGain = ctx.createGain();
+      masterGain.gain.setValueAtTime(0.2, now);
+      masterGain.connect(ctx.destination);
+
+      function playBoop(startFreq, endFreq, startTime, duration, vol = 1.0) {
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(startFreq, startTime);
+        osc.frequency.exponentialRampToValueAtTime(endFreq, startTime + duration);
+        gain.gain.setValueAtTime(0, startTime);
+        gain.gain.linearRampToValueAtTime(0.5 * vol, startTime + 0.03);
+        gain.gain.exponentialRampToValueAtTime(0.001, startTime + duration);
+        osc.connect(gain);
+        gain.connect(masterGain);
+        osc.start(startTime);
+        osc.stop(startTime + duration);
+      }
+
+      playBoop(349.23, 293.66, now, 0.22, 0.9);
+      playBoop(311.13, 220.00, now + 0.25, 0.3, 1.0);
+
+      setTimeout(() => { if (ctx.state !== 'closed') ctx.close(); }, 700);
+    }
+
+    // Global Audio & Backsound Toggle
+    let audioOn = true;
+    const btnAudio = document.getElementById('btnAudio');
+    const bgMusic = document.getElementById('bgMusic');
+    const soalMusic = document.getElementById('soalMusic');
+
+    btnAudio.addEventListener('click', () => {
+      audioOn = !audioOn;
+      btnAudio.textContent = audioOn ? '🔊' : '🔇';
+      
+      const isChallengeScreen = ['screen-c8', 'screen-c9', 'screen-c10', 'screen-c11', 'screen-c12', 'screen-c15', 'screen-c16'].some(id => document.getElementById(id).classList.contains('active'));
+
+      if (audioOn) {
+        if (isChallengeScreen) {
+          soalMusic.play().catch(e => console.log(e));
+        } else {
+          bgMusic.play().catch(e => console.log(e));
+        }
+      } else {
+        bgMusic.pause();
+        soalMusic.pause();
+      }
+    });
+
+    // Kontrol Modal C1
+    function openModal(id) { document.getElementById(id).style.display = 'flex'; }
+    function closeModal(id) { document.getElementById(id).style.display = 'none'; }
+
+    // State penanganan status tantangan
+    let c8Answered = false;
+    let c9Answered = false;
+    let c10Answered = false;
+    let c11Answered = false;
+    let c12Answered = false;
+    let c15Answered = false;
+
+    // Tombol Mulai dari C1 mereset data & memutar backsound menu
+    function startNewGameFromC1() {
+      localStorage.removeItem('smartShopPlayer');
+      localStorage.removeItem('smartShopScore');
+      localStorage.setItem('smartShopStage1Progress', '0');
+      localStorage.setItem('smartShopStageProgress', '1');
+
+      soalMusic.pause();
+      soalMusic.currentTime = 0;
+
+      if (bgMusic && audioOn) {
+        bgMusic.volume = 0.4;
+        bgMusic.play().catch(error => {
+          console.log("Autoplay dicegah browser:", error);
+        });
+      }
+
+      switchScreen('screen-c3');
+    }
+
+    // Fungsi Pindah Layar (Screen Switcher) dengan Pengaturan Musik Otomatis
+    function switchScreen(screenId) {
+      document.querySelectorAll('.game-screen').forEach(screen => {
+        screen.classList.remove('active');
+      });
+      
+      const targetScreen = document.getElementById(screenId);
+      if (targetScreen) {
+        targetScreen.classList.add('active');
+      } else {
+        alert("Navigasi halaman selanjutnya...");
+        return;
+      }
+
+      // ATURAN MUSIK BERDASARKAN HALAMAN
+      const challengeScreens = ['screen-c8', 'screen-c9', 'screen-c10', 'screen-c11', 'screen-c12', 'screen-c15', 'screen-c16'];
+      
+      if (challengeScreens.includes(screenId)) {
+        // Jika masuk halaman soal tantangan: matikan musik menu, putar musik soal
+        bgMusic.pause();
+        bgMusic.currentTime = 0;
+        if (soalMusic && audioOn) {
+          soalMusic.volume = 0.4;
+          soalMusic.play().catch(e => console.log(e));
+        }
+      } else {
+        // Jika di luar halaman soal tantangan: matikan musik soal, putar musik menu/lobi
+        soalMusic.pause();
+        soalMusic.currentTime = 0;
+        if (bgMusic && audioOn && bgMusic.paused) {
+          bgMusic.volume = 0.4;
+          bgMusic.play().catch(e => console.log(e));
+        }
+      }
+
+      const playerName = localStorage.getItem('smartShopPlayer') || "Sobat Belanja";
+
+      if (screenId === 'screen-c3') {
+        setTimeout(() => {
+          const input = document.getElementById('c3PlayerNameInput');
+          input.value = ""; 
+          input.focus();
+        }, 150);
+      }
+
+      if (screenId === 'screen-c2') { document.getElementById('displayNameText').textContent = playerName; }
+      if (screenId === 'screen-c5') { updateStageDisplayStatus(); document.getElementById('c5PlayerNameText').textContent = playerName; }
+      
+      if (screenId === 'screen-c6') { 
+        document.getElementById('c6PlayerNameText').textContent = playerName; 
+        updateC6AndC7StatusUI();
+      }
+      
+      if (screenId === 'screen-c7') {
+        document.getElementById('c7PlayerNameText').textContent = playerName;
+        const score = localStorage.getItem('smartShopScore') || '0';
+        document.getElementById('c7PlayerScoreText').textContent = `${score} POIN`;
+        const progress = parseInt(localStorage.getItem('smartShopStage1Progress') || '0');
+        updateProgressDots(progress);
+        updateC6AndC7StatusUI();
+      }
+
+      if (screenId === 'screen-c8') { document.getElementById('c8ScoreDisplay').textContent = `Skor : ${localStorage.getItem('smartShopScore') || '0'}`; }
+      if (screenId === 'screen-c9') { document.getElementById('c9ScoreDisplay').textContent = `Skor : ${localStorage.getItem('smartShopScore') || '0'}`; }
+      if (screenId === 'screen-c10') { document.getElementById('c10ScoreDisplay').textContent = `Skor : ${localStorage.getItem('smartShopScore') || '0'}`; }
+      if (screenId === 'screen-c11') { document.getElementById('c11ScoreDisplay').textContent = `Skor : ${localStorage.getItem('smartShopScore') || '0'}`; }
+      if (screenId === 'screen-c12') { document.getElementById('c12ScoreDisplay').textContent = `Skor : ${localStorage.getItem('smartShopScore') || '0'}`; }
+      if (screenId === 'screen-c15') { document.getElementById('c15ScoreDisplay').textContent = `Skor : ${localStorage.getItem('smartShopScore') || '0'}`; }
+      if (screenId === 'screen-c16') { document.getElementById('c16ScoreDisplay').textContent = `Skor : ${localStorage.getItem('smartShopScore') || '0'}`; }
+
+      if (screenId === 'screen-c18') {
+        document.getElementById('c18PlayerNameText').textContent = playerName;
+      }
+    }
+
+    // Selesai melihat slide pembahasan terakhir, arahkan ke C5
+    function finishReviewAndGoC5() {
+      switchScreen('screen-c5');
+    }
+
+    // Pembaruan Status Misi pada C6 dan C7
+    function updateC6AndC7StatusUI() {
+      const stage1Completed = localStorage.getItem('smartShopStage1Progress') === '5';
+      const statusTextC6 = document.getElementById('c6StatusText');
+      const btnSeeScoreC6 = document.getElementById('c6BtnSeeScore');
+      const btnSeeScoreC7 = document.getElementById('c7BtnSeeScore');
+      const btnMainActionC6 = document.getElementById('c6BtnMainAction');
+
+      if (stage1Completed) {
+        if (statusTextC6) {
+          statusTextC6.textContent = "SELESAI ✔";
+          statusTextC6.style.color = "#2e7d32";
+        }
+        if (btnSeeScoreC6) btnSeeScoreC6.style.display = "inline-block";
+        if (btnSeeScoreC7) btnSeeScoreC7.style.display = "inline-block";
+        if (btnMainActionC6) {
+          btnMainActionC6.textContent = "PEMBAHASAN ▶";
+          btnMainActionC6.setAttribute('onclick', "switchScreen('screen-review-1')");
+        }
+      } else {
+        if (statusTextC6) {
+          statusTextC6.textContent = "Belum dimulai";
+          statusTextC6.style.color = "#78947A";
+        }
+        if (btnSeeScoreC6) btnSeeScoreC6.style.display = "none";
+        if (btnSeeScoreC7) btnSeeScoreC7.style.display = "none";
+        if (btnMainActionC6) {
+          btnMainActionC6.textContent = "MULAI MISI ▶";
+          btnMainActionC6.setAttribute('onclick', "switchScreen('screen-c7')");
+        }
+      }
+    }
+
+    // Logika Klik Kartu Misi Tahap 1 di Halaman C5
+    function handleStage1CardClick() {
+      const stage1Completed = localStorage.getItem('smartShopStage1Progress') === '5';
+      if (stage1Completed) {
+        switchScreen('screen-review-1'); // Selesai -> buka pembahasan
+      } else {
+        switchScreen('screen-c6'); // Belum selesai -> buka pengantar misi tahap 1
+      }
+    }
+
+    // Logika Klik Kartu Misi Tahap 2 di Halaman C5
+    function handleStage2CardClick() {
+      const stage1Completed = localStorage.getItem('smartShopStage1Progress') === '5';
+      if (!stage1Completed) {
+        alert("Selesaikan Misi Tahap 1 (Persamaan) terlebih dahulu untuk membuka Tahap 2!");
+      } else {
+        alert("Misi Tahap 2 (Pertidaksamaan) akan segera dimulai!");
+      }
+    }
+
+    // Navigasi Tombol LANJUT pada Halaman C7
+    function handleC7NextNavigation() {
+      const stage1Completed = localStorage.getItem('smartShopStage1Progress') === '5';
+      if (stage1Completed) {
+        switchScreen('screen-c5'); // Jika sudah selesai, kembali ke C5
+      } else {
+        switchScreen('screen-c8'); // Mulai Tantangan 1
+      }
+    }
+
+    // Validasi & Simpan Nama Pemain
+    function validateAndSavePlayerName() {
+      const input = document.getElementById('c3PlayerNameInput');
+      const notificationBox = document.getElementById('c3NotificationBox');
+      const playerName = input.value.trim();
+
+      if (playerName === "") {
+        notificationBox.style.display = 'flex';
+        input.style.borderColor = '#E8A8B8';
+        input.focus();
+        return;
+      }
+
+      notificationBox.style.display = 'none';
+      input.style.borderColor = '#A8795D';
+
+      localStorage.setItem('smartShopScore', '0');
+      localStorage.setItem('smartShopStage1Progress', '0');
+      localStorage.setItem('smartShopStageProgress', '1');
+      localStorage.setItem('smartShopPlayer', playerName);
+      document.getElementById('displayNameText').textContent = playerName;
+
+      switchScreen('screen-c2');
+    }
+
+    function getPlayerProgress() {
+      return parseInt(localStorage.getItem('smartShopStageProgress') || '1');
+    }
+
+    function updateStageDisplayStatus() {
+      const stage1Completed = localStorage.getItem('smartShopStage1Progress') === '5';
+      const card2 = document.getElementById('cardStage2');
+      const badge1 = document.getElementById('badgeStage1');
+      const badge2 = document.getElementById('badgeStage2');
+      const btnSeeScoreC5 = document.getElementById('c5BtnSeeScore');
+
+      if (stage1Completed) {
+        badge1.textContent = "SELESAI ✔";
+        badge1.className = "c5-status-badge status-completed";
+        if (btnSeeScoreC5) btnSeeScoreC5.style.display = "inline-block";
+        card2.classList.remove('locked');
+        badge2.textContent = "SIAP DIMAINKAN";
+        badge2.className = "c5-status-badge status-ready";
+      } else {
+        badge1.textContent = "BELUM DIMULAI";
+        badge1.className = "c5-status-badge status-ready";
+        if (btnSeeScoreC5) btnSeeScoreC5.style.display = "none";
+        card2.classList.add('locked');
+        badge2.textContent = "TERKUNCI 🔒";
+        badge2.className = "c5-status-badge status-locked";
+      }
+    }
+
+    function proceedToCurrentStage() {
+      const stage1Completed = localStorage.getItem('smartShopStage1Progress') === '5';
+      if (stage1Completed) {
+        switchScreen('screen-c5'); 
+      } else {
+        switchScreen('screen-c6');
+      }
+    }
+
+    function updateProgressDots(completedCount) {
+      for (let i = 1; i <= 5; i++) {
+        const dot = document.getElementById(`dot-${i}`);
+        if (dot) {
+          if (i <= completedCount) { dot.classList.add('completed'); }
+          else { dot.classList.remove('completed'); }
+        }
+      }
+      const progressTextEl = document.getElementById('c7ProgressText');
+      if (progressTextEl) { progressTextEl.textContent = `${completedCount}/5 TANTANGAN`; }
+    }
+
+    // Logika Umum Penanganan Jawaban & Pembahasan
+    function handleAnswer(isCorrect, scorePoints, answeredStateFlag, feedbackId, explanationId, btnNextId, scoreDisplayId, progressValue, screenName) {
+      if (window[answeredStateFlag]) return; 
+      window[answeredStateFlag] = true;
+
+      const feedbackBox = document.getElementById(feedbackId);
+      const explanationBox = document.getElementById(explanationId);
+      const btnNext = document.getElementById(btnNextId);
+      const optionButtons = document.querySelectorAll(`#screen-${screenName} .challenge-option-btn`);
+
+      optionButtons.forEach(btn => btn.style.pointerEvents = 'none');
+
+      if (isCorrect) {
+        if (audioOn) { playAnswerCorrectSound(); }
+        feedbackBox.innerHTML = "✔ BENAR! Hebat, jawabanmu sudah tepat! 🎉";
+        feedbackBox.className = "challenge-feedback-box correct";
+        
+        let currentScore = parseInt(localStorage.getItem('smartShopScore') || '0');
+        currentScore += scorePoints;
+        localStorage.setItem('smartShopScore', currentScore);
+        document.getElementById(scoreDisplayId).textContent = `Skor : ${currentScore}`;
+        localStorage.setItem('smartShopStage1Progress', progressValue);
+      } else {
+        if (audioOn) { playAnswerIncorrectSound(); }
+        feedbackBox.innerHTML = "✖ BELUM TEPAT! Yuk, pelajari pembahasan langkah penyelesaian di bawah ini.";
+        feedbackBox.className = "challenge-feedback-box wrong";
+        localStorage.setItem('smartShopStage1Progress', progressValue);
+      }
+
+      feedbackBox.style.display = 'block';
+      explanationBox.style.display = 'block';
+      btnNext.style.display = 'inline-flex';
+    }
+
+    function checkAnswerC8(optionKey, isCorrect) { handleAnswer(isCorrect, 10, 'c8Answered', 'c8Feedback', 'c8Explanation', 'c8BtnNext', 'c8ScoreDisplay', '1', 'c8'); }
+    function checkAnswerC9(optionKey, isCorrect) { handleAnswer(isCorrect, 10, 'c9Answered', 'c9Feedback', 'c9Explanation', 'c9BtnNext', 'c9ScoreDisplay', '2', 'c9'); }
+    function checkAnswerC10(optionKey, isCorrect) { handleAnswer(isCorrect, 5, 'c10Answered', 'c10Feedback', 'c10Explanation', 'c10BtnNext', 'c10ScoreDisplay', '3', 'c10'); }
+    function checkAnswerC11(optionKey, isCorrect) { handleAnswer(isCorrect, 5, 'c11Answered', 'c11Feedback', 'c11Explanation', 'c11BtnNext', 'c11ScoreDisplay', '4', 'c11'); }
+    function checkAnswerC12(optionKey, isCorrect) { handleAnswer(isCorrect, 10, 'c12Answered', 'c12Feedback', 'c12Explanation', 'c12BtnNext', 'c12ScoreDisplay', '5', 'c12'); }
+
+    // Logika Khusus Tantangan 5: Tantangan Bos Kasir (C15)
+    function checkAnswerC15(optionKey, isCorrect) {
+      if (c15Answered) return;
+      c15Answered = true;
+
+      const feedbackBox = document.getElementById('c15Feedback');
+      const explanationBox = document.getElementById('c15Explanation');
+      const btnNext = document.getElementById('c15BtnNext');
+      const optionButtons = document.querySelectorAll('#screen-c15 .challenge-option-btn');
+
+      optionButtons.forEach(btn => btn.style.pointerEvents = 'none');
+
+      if (isCorrect) {
+        if (audioOn) { playAnswerCorrectSound(); }
+        feedbackBox.innerHTML = "✔ BENAR! Hebat, kamu berhasil melewati Tantangan Bos Kasir! 🎉";
+        feedbackBox.className = "challenge-feedback-box correct";
+        
+        let currentScore = parseInt(localStorage.getItem('smartShopScore') || '0');
+        currentScore += 15;
+        localStorage.setItem('smartShopScore', currentScore);
+        document.getElementById('c15ScoreDisplay').textContent = `Skor : ${currentScore}`;
+      } else {
+        if (audioOn) { playAnswerIncorrectSound(); }
+        feedbackBox.innerHTML = "✖ BELUM TEPAT! Yuk, perhatikan kembali langkah pembahasannya di bawah.";
+        feedbackBox.className = "challenge-feedback-box wrong";
+      }
+
+      feedbackBox.style.display = 'block';
+      explanationBox.style.display = 'block';
+      btnNext.style.display = 'inline-flex';
+    }
+
+    function completeStage1AndGoC18() {
+      localStorage.setItem('smartShopStageProgress', '2');
+      localStorage.setItem('smartShopStage1Progress', '5');
+      switchScreen('screen-c18');
+    }
+
+    document.getElementById('c3PlayerNameInput').addEventListener('input', (e) => {
+      e.target.style.direction = 'ltr';
+      if (e.target.value.trim() !== "") {
+        document.getElementById('c3NotificationBox').style.display = 'none';
+        e.target.style.borderColor = '#A8795D';
+      }
+    });
+  </script>
+</body>
+</html>
